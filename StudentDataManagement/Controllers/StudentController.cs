@@ -11,7 +11,7 @@ namespace StudentDataManagement.Controllers
     [ApiController]
     public class StudentController : ControllerBase
     {
-        List<Student> Students = new List<Student> {
+        static List<Student> Students = new List<Student> {
             new Student{RollNo=1,Name="RVR",Rank=2,Age=21},
             new Student{RollNo=2,Name="Ramana",Rank=2,Age=22},
             new Student{RollNo=3,Name="Venkat",Rank=3,Age=23}
@@ -19,9 +19,9 @@ namespace StudentDataManagement.Controllers
 
         [HttpGet]
         [Route("All")]
-        public List<Student> GetAllStudents()
+        public IEnumerable<Student> GetAllStudents()
         {
-            return Students;
+            return from student in Students orderby student.RollNo select student;
         }
 
         [HttpGet]
@@ -32,19 +32,27 @@ namespace StudentDataManagement.Controllers
         }
 
         [HttpPost]
-        [Route("Add/{Name=name}")]
-        public void Add(string Name)
+        [Route("Add/{Name}/{RollNo}/{Rank}/{Age}")]
+        public IEnumerable<Student> Add(string Name, int RollNo, int Rank, int Age)
         {
-            List<Student> Students = GetAllStudents();
-            Students.Add(new Student{ RollNo=0,Name=Name,Rank=2,Age=22});
+            Students.Add(new Student { Name = Name, RollNo = RollNo, Rank = Rank, Age = Age });
+            return GetAllStudents();
+        }
+
+        [HttpPut]
+        [Route("Modify/{RollNo}/{Rank=rank}")]
+        public IEnumerable<Student> Modify (int RollNo,int Rank)
+        {
+            Students.Find(student=>student.RollNo==RollNo).Rank=Rank;
+            return GetAllStudents();
         }
 
         [HttpDelete]
         [Route("Remove/{Id}")]
-        public void Delete(int Id)
+        public IEnumerable<Student> Delete(int Id)
         {
-            Student student = Students.Find(student=>student.RollNo==Id);
-            Students.Remove(student);
+            Students.Remove(Students.Find(student => student.RollNo == Id));
+            return GetAllStudents();
         }
     }
 }
